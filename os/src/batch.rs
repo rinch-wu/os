@@ -1,3 +1,5 @@
+//! batch subsystem
+
 use core::arch::asm;
 
 use crate::sync::UPSafeCell;
@@ -74,11 +76,11 @@ impl AppManager {
         println!("[kernel] num_app = {}", self.num_app);
         for i in 0..self.num_app {
             println!(
-                "[kernel] app_{} [{:#x}, {:#x}",
+                "[kernel] app_{} [{:#x}, {:#x})",
                 i,
                 self.app_start[i],
                 self.app_start[i + 1]
-            )
+            );
         }
     }
     unsafe fn load_app(&self, app_id: usize) {
@@ -105,13 +107,15 @@ impl AppManager {
     }
 }
 
+/// init batch subsystem
 pub fn init() {
     print_app_info()
 }
-
+/// print apps info
 pub fn print_app_info() {
     APP_MANAGER.exclusive_access().print_app_nfo();
 }
+/// run next app
 pub fn run_next_app() -> ! {
     let mut app_manager = APP_MANAGER.exclusive_access();
     let current_app = app_manager.get_current_app();
