@@ -4,14 +4,12 @@
 #[macro_use]
 extern crate user_lib;
 
-use riscv::register::sstatus::{self, SPP};
-
 #[no_mangle]
 fn main() -> i32 {
-    println!("Try to access privileged CSR in U Mode");
+    println!("Into Test store_fault, we will insert an invalid store operation...");
     println!("Kernel should kill this application!");
     unsafe {
-        sstatus::set_spp(SPP::User);
+        core::ptr::null_mut::<u8>().write_volatile(0);
     }
     0
 }
