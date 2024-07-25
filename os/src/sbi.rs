@@ -6,11 +6,9 @@ pub fn console_putchar(c: usize) {
     sbi_rt::legacy::console_putchar(c);
 }
 
-/// use sbi call to getchar from console (qemu uart handler)
-#[allow(unused)]
-pub fn console_getchar() -> usize {
-    #[allow(deprecated)]
-    sbi_rt::legacy::console_getchar()
+/// use sbi call to set timer
+pub fn set_timer(timer: usize) {
+    sbi_rt::set_timer(timer as _);
 }
 
 /// use sbi call to shutdown the kernel
@@ -23,18 +21,3 @@ pub fn shutdown(failure: bool) -> ! {
     }
     unreachable!()
 }
-
-/// set_timer
-pub fn set_timer(timer: usize) {
-    sbi_rt::set_timer(timer as _);
-}
-
-// use crate::board::CLOCK_FREQ;
-// use crate::timer::get_time;
-
-// const SBI_SET_TIMER: usize = 0;
-// const TICKS_PER_SEC: usize = 100;
-
-// pub fn set_next_trigger() {
-//     set_timer(get_time() + CLOCK_FREQ / TICKS_PER_SEC);
-// }
