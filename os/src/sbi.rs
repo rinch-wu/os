@@ -1,6 +1,3 @@
-//! SBI call wrappers
-#![allow(unused)]
-
 /// use sbi call to putchar in console (qemu uart handler)
 pub fn console_putchar(c: usize) {
     #[allow(deprecated)]
