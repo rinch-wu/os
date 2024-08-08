@@ -1,4 +1,5 @@
 //!Implementation of [`Processor`] and Intersection of control flow
+use super::ProcessControlBlock;
 use super::__switch;
 use super::{fetch_task, TaskStatus};
 use super::{TaskContext, TaskControlBlock};
@@ -69,10 +70,14 @@ pub fn take_current_task() -> Option<Arc<TaskControlBlock>> {
 pub fn current_task() -> Option<Arc<TaskControlBlock>> {
     PROCESSOR.exclusive_access().current()
 }
+///Get running process
+pub fn current_process() -> Arc<ProcessControlBlock> {
+    current_task().unwrap().process.upgrade().unwrap()
+}
 ///Get token of the address space of current task
 pub fn current_user_token() -> usize {
     let task = current_task().unwrap();
-    let token = task.inner_exclusive_access().get_user_token();
+    let token = task.get_user_token();
     token
 }
 ///Get the mutable reference to trap context of current task
@@ -90,4 +95,18 @@ pub fn schedule(switched_task_cx_ptr: *mut TaskContext) {
     unsafe {
         __switch(switched_task_cx_ptr, idle_task_cx_ptr);
     }
+}
+
+pub fn current_kstack_top() -> usize {
+    current_task().unwrap().kstack.get_top()
+}
+
+pub fn current_trap_cx_user_va() -> usize {
+    current_task()
+        .unwrap()
+        .inner_exclusive_access()
+        .res
+        .as_ref()
+        .unwrap()
+        .trap_cx_user_va()
 }
