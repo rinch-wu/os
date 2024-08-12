@@ -2,10 +2,10 @@ use alloc::{collections::vec_deque::VecDeque, sync::Arc};
 
 use crate::task::{block_current_and_run_next, current_task, wakeup_task, TaskControlBlock};
 
-use super::{Mutex, UPSafeCell};
+use super::{Mutex, UPIntrFreeCell};
 
 pub struct Condvar {
-    pub inner: UPSafeCell<CondvarInner>,
+    pub inner: UPIntrFreeCell<CondvarInner>,
 }
 
 pub struct CondvarInner {
@@ -18,7 +18,7 @@ impl Condvar {
             wait_queue: VecDeque::new(),
         };
         Self {
-            inner: unsafe { UPSafeCell::new(inner) },
+            inner: unsafe { UPIntrFreeCell::new(inner) },
         }
     }
 

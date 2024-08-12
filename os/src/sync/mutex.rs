@@ -5,7 +5,7 @@ use crate::task::{
     TaskControlBlock,
 };
 
-use super::UPSafeCell;
+use super::UPIntrFreeCell;
 
 pub trait Mutex: Sync + Send {
     fn lock(&self);
@@ -13,13 +13,13 @@ pub trait Mutex: Sync + Send {
 }
 
 pub struct MutexSpin {
-    locked: UPSafeCell<bool>,
+    locked: UPIntrFreeCell<bool>,
 }
 
 impl MutexSpin {
     pub fn new() -> Self {
         Self {
-            locked: unsafe { UPSafeCell::new(false) },
+            locked: unsafe { UPIntrFreeCell::new(false) },
         }
     }
 }
@@ -45,7 +45,7 @@ impl Mutex for MutexSpin {
 }
 
 pub struct MutexBlocking {
-    inner: UPSafeCell<MutexBlockingInner>,
+    inner: UPIntrFreeCell<MutexBlockingInner>,
 }
 
 pub struct MutexBlockingInner {
@@ -60,7 +60,7 @@ impl MutexBlocking {
             wait_queue: VecDeque::new(),
         };
         Self {
-            inner: unsafe { UPSafeCell::new(inner) },
+            inner: unsafe { UPIntrFreeCell::new(inner) },
         }
     }
 }

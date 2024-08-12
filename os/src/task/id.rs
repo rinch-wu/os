@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 use crate::{
     config::{KERNEL_STACK_SIZE, PAGE_SIZE, TRAMPOLINE, TRAP_CONTEXT_BASE, USER_STACK_SIZE},
     mm::{MapPermission, PhysPageNum, VirtAddr, KERNEL_SPACE},
-    sync::UPSafeCell,
+    sync::UPIntrFreeCell,
 };
 
 use super::process::ProcessControlBlock;
@@ -65,12 +65,12 @@ pub struct TaskUserRes {
 }
 
 lazy_static! {
-    static ref PID_ALLOCATOR: UPSafeCell<RecycleAllocator> =
-        unsafe { UPSafeCell::new(RecycleAllocator::new()) };
+    static ref PID_ALLOCATOR: UPIntrFreeCell<RecycleAllocator> =
+        unsafe { UPIntrFreeCell::new(RecycleAllocator::new()) };
 }
 lazy_static! {
-    static ref KSTACK_ALLOCATOR: UPSafeCell<RecycleAllocator> =
-        unsafe { UPSafeCell::new(RecycleAllocator::new()) };
+    static ref KSTACK_ALLOCATOR: UPIntrFreeCell<RecycleAllocator> =
+        unsafe { UPIntrFreeCell::new(RecycleAllocator::new()) };
 }
 
 impl RecycleAllocator {

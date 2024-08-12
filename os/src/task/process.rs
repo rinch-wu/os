@@ -1,9 +1,7 @@
-use core::cell::RefMut;
-
 use crate::{
     fs::{File, Stdin, Stdout},
     mm::{translated_refmut, MemorySet, KERNEL_SPACE},
-    sync::{Condvar, Mutex, Semaphore, UPSafeCell},
+    sync::{Condvar, Mutex, Semaphore, UPIntrFreeCell, UPIntrRefMut},
     trap::{trap_handler, TrapContext},
 };
 use alloc::vec;
@@ -20,7 +18,7 @@ use super::{
 
 pub struct ProcessControlBlock {
     pub pid: PidHandle,
-    inner: UPSafeCell<ProcessControlBlockInner>,
+    inner: UPIntrFreeCell<ProcessControlBlockInner>,
 }
 
 pub struct ProcessControlBlockInner {
@@ -66,7 +64,7 @@ impl ProcessControlBlockInner {
 }
 
 impl ProcessControlBlock {
-    pub fn inner_exclusive_access(&self) -> RefMut<'_, ProcessControlBlockInner> {
+    pub fn inner_exclusive_access(&self) -> UPIntrRefMut<'_, ProcessControlBlockInner> {
         self.inner.exclusive_access()
     }
     pub fn getpid(&self) -> usize {
@@ -79,7 +77,7 @@ impl ProcessControlBlock {
         let process: Arc<ProcessControlBlock> = Arc::new(ProcessControlBlock {
             pid: pid_handle,
             inner: unsafe {
-                UPSafeCell::new(ProcessControlBlockInner {
+                UPIntrFreeCell::new(ProcessControlBlockInner {
                     is_zombie: false,
                     memory_set,
                     parent: None,
@@ -211,7 +209,7 @@ impl ProcessControlBlock {
 
         let child = Arc::new(Self {
             pid: pid,
-            inner: unsafe { UPSafeCell::new(pcb_inner) },
+            inner: unsafe { UPIntrFreeCell::new(pcb_inner) },
         });
 
         parent.children.push(Arc::clone(&child));

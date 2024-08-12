@@ -7,3 +7,9 @@ pub const MMIO: &[(usize, usize)] = &[
 ];
 
 pub type BlockDeviceImpl = crate::drivers::block::VirtIOBlock;
+
+pub fn device_init() {
+    PLIC
+}
+
+pub fn irq_handler() {}
