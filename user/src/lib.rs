@@ -5,6 +5,7 @@
 
 #[macro_use]
 pub mod console;
+mod io;
 mod lang_items;
 mod syscall;
 
@@ -14,6 +15,7 @@ extern crate bitflags;
 
 use alloc::vec::Vec;
 use buddy_system_allocator::LockedHeap;
+use io::*;
 use syscall::*;
 
 const USER_HEAP_SIZE: usize = 32768;
@@ -296,4 +298,25 @@ pub fn condvar_signal(condvar_id: usize) -> isize {
 
 pub fn condvar_wait(condvar_id: usize, mutex_id: usize) -> isize {
     sys_condvar_wait(condvar_id, mutex_id)
+}
+
+pub fn framebuffer() -> isize {
+    sys_framebuffer()
+}
+
+pub fn framebuffer_flush() -> isize {
+    sys_framebuffer_flush()
+}
+
+pub fn event_get() -> Option<InputEvent> {
+    let raw_value = sys_event_get();
+    if raw_value == 0 {
+        None
+    } else {
+        Some((raw_value as u64).into())
+    }
+}
+
+pub fn key_pressed() -> bool {
+    sys_key_pressed() == 1
 }

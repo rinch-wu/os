@@ -1,4 +1,5 @@
 //! Implementation of [`MapArea`] and [`MemorySet`].
+use super::address::PPNRange;
 use super::{frame_alloc, FrameTracker};
 use super::{PTEFlags, PageTable, PageTableEntry};
 use super::{PhysAddr, PhysPageNum, VirtAddr, VirtPageNum};
@@ -9,6 +10,7 @@ use alloc::collections::BTreeMap;
 use alloc::sync::Arc;
 use alloc::vec::Vec;
 use core::arch::asm;
+use core::iter::zip;
 use lazy_static::*;
 use riscv::register::satp;
 
@@ -83,6 +85,12 @@ impl MemorySet {
         }
         self.areas.push(map_area);
     }
+
+    pub fn push_noalloc(&mut self, mut map_area: MapArea, ppn_range: PPNRange) {
+        map_area.map_noalloc(&mut self.page_table, ppn_range);
+        self.areas.push(map_area);
+    }
+
     /// Mention that trampoline is not collected by areas.
     fn map_trampoline(&mut self) {
         self.page_table.map(
@@ -315,6 +323,14 @@ impl MapArea {
     pub fn unmap(&mut self, page_table: &mut PageTable) {
         for vpn in self.vpn_range {
             self.unmap_one(page_table, vpn);
+        }
+    }
+
+    pub fn map_noalloc(&mut self, page_table: &mut PageTable, ppn_range: PPNRange) {
+        for (vpn, ppn) in zip(self.vpn_range, ppn_range) {
+            self.data_frames.insert(vpn, FrameTracker::new_noalloc(ppn));
+            let pte_flags = PTEFlags::from_bits(self.map_perm.bits).unwrap();
+            page_table.map(vpn, ppn, pte_flags);
         }
     }
     /// data: start-aligned but maybe with shorter length

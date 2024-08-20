@@ -132,6 +132,6 @@ pub fn sys_condvar_wait(condvar_id: usize, mutex_id: usize) -> isize {
     let mutex = Arc::clone(process_inner.mutex_list[mutex_id].as_ref().unwrap());
     drop(process_inner);
     drop(process);
-    condvar.wait(mutex);
+    condvar.wait_with_mutex(mutex);
     0
 }

@@ -11,17 +11,18 @@ use lazy_static::*;
 pub struct FrameTracker {
     ///
     pub ppn: PhysPageNum,
+    pub nodrop: bool,
 }
 
 impl FrameTracker {
     ///Create an empty `FrameTracker`
-    pub fn new(ppn: PhysPageNum) -> Self {
+    pub fn new_noalloc(ppn: PhysPageNum) -> Self {
         // page cleaning
         let bytes_array = ppn.get_bytes_array();
         for i in bytes_array {
             *i = 0;
         }
-        Self { ppn }
+        Self { ppn, nodrop: true }
     }
 }
 
@@ -33,6 +34,9 @@ impl Debug for FrameTracker {
 
 impl Drop for FrameTracker {
     fn drop(&mut self) {
+        if self.nodrop {
+            return;
+        }
         frame_dealloc(self.ppn);
     }
 }
@@ -107,7 +111,7 @@ pub fn frame_alloc() -> Option<FrameTracker> {
     FRAME_ALLOCATOR
         .exclusive_access()
         .alloc()
-        .map(FrameTracker::new)
+        .map(FrameTracker::new_noalloc)
 }
 /// deallocate a frame
 pub fn frame_dealloc(ppn: PhysPageNum) {
